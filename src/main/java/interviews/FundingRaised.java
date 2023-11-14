@@ -7,6 +7,7 @@ import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class FundingRaised {
 
@@ -67,15 +68,15 @@ public class FundingRaised {
     }
 
     //this method can return unique member of table or throw exception
-    public static Map<String, String> findUniqueMember(Map<String, String> options) throws IOException, NoSuchEntryException, CsvValidationException {
+    public static Map<String, String> findUniqueMember(Map<String, String> options) throws Exception {
         List<String[]> csvData =getData();
 
         Map<String, Integer> mappCheck =getSearchingKeyValues();
         List<String> allKeys =getAllKeys();
 
-        if(options.size()!=mappCheck.size())
-        throw new NoSuchEntryException();
-        else{
+        if(options.size()==mappCheck.size())
+        {
+            int index=0;
             for(Map.Entry<String, Integer> obj : mappCheck.entrySet()){
                 if(options.containsKey(obj.getKey())) {
                     csvData.removeIf(csvDatum -> !csvDatum[obj.getValue()].equals(options.get(obj.getKey())));
@@ -83,23 +84,28 @@ public class FundingRaised {
             }
             Map<String, String> mapReturn = new HashMap<>();
             int i=0;
-            while( i<csvData.get(0).length){
-                mapReturn.put(allKeys.get(i),csvData.get(0)[i]);
-                i++;
+            List<String> listOfStrings = csvData.stream()
+                    .flatMap(Arrays::stream)
+                    .toList();
+                while (i < listOfStrings.size()) {
+                    mapReturn.put(allKeys.get(i), listOfStrings.get(i));
+                    i++;
+                }
+                if(mapReturn.size()!=0)
+                return mapReturn;
             }
-
-            return mapReturn;
+               throw new NoSuchEntryException();
         }
-    }
 //just check my code
-    public static void main(String[] args) throws CsvValidationException, IOException, NoSuchEntryException {
+    public static void main(String[] args) throws Exception {
         Map<String,String> map=new HashMap<>();
-        map.put("city","Tempe");
-        map.put("company_name","LifeLock");
-        map.put("state","AZ");
+        map.put("city","Palo Alto");
+        map.put("company_name","Facebolkjhgok");
+        map.put("state","CA");
         map.put("round","b");
         System.out.println(findUniqueMember(map).toString());
     }
 }
+//facebook,Facebook,450,web,Palo Alto,CA,1-Apr-06,27500000,USD,b
 
 class NoSuchEntryException extends Exception {}
